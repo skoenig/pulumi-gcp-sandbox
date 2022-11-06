@@ -6,3 +6,10 @@ This repo includes a simple Pulumi program as well as a Makefile to easily creat
 
 Instead of the external Pulumi service, the local file service is used, so you don't need to create an account on https://app.pulumi.com/.
 
+## Usage
+1. Create the GCP project linked to your billing account and initialize Pulumi: `BILLING_ACCOUNT="012345-DEFGH8-67890A" make init`
+2. Deploy the Pulumi stack: `make install`
+ There is a pretty high chance that you run into a race condition between instance / network creation and enabling of `compute.googleapis.com` service API. If this error occurs, run `make install` again.
+3. Do your changes to `__main__.py` and repeat step 2 to deploy them.
+4. To delete the Pulumi stack and GCP project: `make clean`
+
