@@ -1,0 +1,6 @@
+name: pulumi-gcp-sandbox
+description: This is a simple Pulumi setup for creating GCP sandbox projects.
+runtime:
+    name: python
+    options:
+        virtualenv: venv
