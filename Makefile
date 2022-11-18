@@ -1,4 +1,12 @@
-export PULUMI_CONFIG_PASSPHRASE_FILE=.passphrase
+
+DOCKER_CMD = docker run -it --rm \
+		 -v ~/.config/gcloud:/root/.config/gcloud \
+		 -v ~/.pulumi:/root/.pulumi \
+		 -v $(PWD):/pulumi/projects \
+		 -w /pulumi/projects \
+		 -e PULUMI_CONFIG_PASSPHRASE_FILE=.passphrase \
+		 pulumi/pulumi-python \
+		 /bin/bash
 
 .passphrase:
 	@dd if=/dev/urandom bs=32 count=1 status=none | base64 > $@
@@ -12,19 +20,19 @@ endif
 
 	gcloud projects create $(PROJECT)
 	gcloud alpha billing projects link $(PROJECT) --billing-account=$(BILLING_ACCOUNT)
-	pulumi login --local
-	pulumi stack init dev
-	pulumi config set gcp:project $(PROJECT)
-	pulumi config set gcp:zone europe-north1-a
-	pulumi config set gcp:region europe-north1
+	$(DOCKER_CMD) -c "pulumi login --local"
+	$(DOCKER_CMD) -c "pulumi stack init dev"
+	$(DOCKER_CMD) -c "pulumi config set gcp:project $(PROJECT)"
+	$(DOCKER_CMD) -c "pulumi config set gcp:zone europe-north1-a"
+	$(DOCKER_CMD) -c "pulumi config set gcp:region europe-north1"
 
 .PHONY: install
 install: .passphrase
-	pulumi up
+	$(DOCKER_CMD) -c "pulumi up"
 
 .PHONY: clean
-clean: PROJECT := $(shell pulumi config get gcp:project 2>/dev/null)
 clean:
-	pulumi stack rm dev --force -y
+	$(eval PROJECT := $(shell $(DOCKER_CMD) -c "pulumi config get gcp:project 2>/dev/null"))
+	$(DOCKER_CMD) -c "pulumi stack rm dev --force -y"
 	gcloud projects delete $(PROJECT) --quiet
 
