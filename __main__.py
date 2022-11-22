@@ -15,6 +15,7 @@ service_compute = projects.Service(
 compute_network = compute.Network(
     'network',
     auto_create_subnetworks=True,
+    opts=pulumi.ResourceOptions(depends_on=[service_compute]),
 )
 
 compute_firewall = compute.Firewall(
@@ -34,7 +35,10 @@ startup_script = '''#!/bin/bash
 echo 'Hello, World!' > index.html
 nohup python -m SimpleHTTPServer 80 &'''
 
-instance_addr = compute.address.Address('address')
+instance_addr = compute.address.Address(
+    'address',
+    opts=pulumi.ResourceOptions(depends_on=[service_compute]),
+)
 compute_instance = compute.Instance(
     'instance',
     machine_type='f1-micro',
