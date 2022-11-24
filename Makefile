@@ -23,8 +23,8 @@ endif
 	$(DOCKER_CMD) -c "pulumi login --local"
 	$(DOCKER_CMD) -c "pulumi stack init dev"
 	$(DOCKER_CMD) -c "pulumi config set gcp:project $(PROJECT)"
-	$(DOCKER_CMD) -c "pulumi config set gcp:zone europe-north1-a"
-	$(DOCKER_CMD) -c "pulumi config set gcp:region europe-north1"
+	$(DOCKER_CMD) -c "pulumi config set gcp:zone europe-west6-a"
+	$(DOCKER_CMD) -c "pulumi config set gcp:region europe-west6"
 
 .PHONY: install
 install: .passphrase
