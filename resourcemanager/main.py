@@ -35,12 +35,12 @@ def check_project_age():
     if not project:
         return f"project {project_id} not found", 404
 
-    if project.create_time.timestamp() + MAX_PROJECT_AGE * 7 > int(
-        datetime.now().timestamp()
-    ):
-        return 'project still within expiry range'
+    expiry_date = project.create_time.timestamp() + MAX_PROJECT_AGE * 7
+
+    if expiry_date > int(datetime.now().timestamp()):
+        return f'project {project_id} still within expiry range ({datetime.fromtimestamp(expiry_date):%F})'
     else:
-        return 'project expired, deleting now'
+        return f'project {project_id} expired ({datetime.fromtimestamp(expiry_date):%F}), deleting now'
 
 
 def entry_point(request):
