@@ -48,6 +48,9 @@ def check_project_age():
     if expiry_date > int(datetime.now().timestamp()):
         return f'project {project_id} still within expiry range ({datetime.fromtimestamp(expiry_date):%F})'
     else:
+        client = resourcemanager_v3.ProjectsClient()
+        request = resourcemanager_v3.DeleteProjectRequest(name=project.name)
+        client.delete_project(request=request)
         return f'project {project_id} expired ({datetime.fromtimestamp(expiry_date):%F}), deleting now'
 
 

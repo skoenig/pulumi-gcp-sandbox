@@ -1,5 +1,5 @@
 import pulumi
-from pulumi_gcp import projects, storage, cloudfunctions
+from pulumi_gcp import projects, storage, cloudfunctions, serviceaccount
 
 # Get stack config
 config = pulumi.Config('gcp')
@@ -38,7 +38,6 @@ py_bucket_object = storage.BucketObject(
     ),
 )
 
-
 py_function = cloudfunctions.Function(
     'python-func',
     runtime='python38',
@@ -48,6 +47,7 @@ py_function = cloudfunctions.Function(
     trigger_http=True,
     available_memory_mb=128,
     environment_variables={'PROJECT_LIFETIME': 7},
+    service_account_email=f'resourcemanager@{project}.iam.gserviceaccount.com',
     opts=pulumi.ResourceOptions(
         depends_on=[
             apis['cloudfunctions.googleapis.com'],
@@ -57,7 +57,7 @@ py_function = cloudfunctions.Function(
     ),
 )
 
-py_invoker = cloudfunctions.FunctionIamMember(
+invoker = cloudfunctions.FunctionIamMember(
     'python-invoker',
     project=py_function.project,
     region=py_function.region,
@@ -65,5 +65,18 @@ py_invoker = cloudfunctions.FunctionIamMember(
     role='roles/cloudfunctions.invoker',
     member='allUsers',
 )
+
+service_account = serviceaccount.Account(
+    'python-serviceaccount',
+    account_id='resourcemanager',
+)
+
+for role in ['roles/resourcemanager.projectDeleter', 'roles/viewer']:
+    projects.IAMMember(
+        role.split('/')[-1],
+        project=py_function.project,
+        role=role,
+        member=f'serviceAccount:resourcemanager@{project}.iam.gserviceaccount.com',
+    )
 
 pulumi.export('cloud_function_trigger_url', py_function.https_trigger_url)
