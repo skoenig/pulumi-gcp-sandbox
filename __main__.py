@@ -47,6 +47,7 @@ py_function = cloudfunctions.Function(
     entry_point='entry_point',
     trigger_http=True,
     available_memory_mb=128,
+    environment_variables={'PROJECT_LIFETIME': 7},
     opts=pulumi.ResourceOptions(
         depends_on=[
             apis['cloudfunctions.googleapis.com'],

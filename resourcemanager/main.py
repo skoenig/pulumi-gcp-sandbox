@@ -1,9 +1,11 @@
+import os
+
 from datetime import datetime
 
 import google.auth
 from google.cloud import resourcemanager_v3
 
-MAX_PROJECT_AGE = 86400  # seconds in a days
+DEFAULT_PROJECT_LIFETIME = 30
 
 
 def get_organization_name():
@@ -30,12 +32,18 @@ def get_project(project_id):
 
 
 def check_project_age():
+
+    if os.environ.get('PROJECT_LIFETIME') is not None:
+        project_lifetime = int(os.environ.get('PROJECT_LIFETIME'))
+    else:
+        project_lifetime = DEFAULT_PROJECT_LIFETIME
+
     credentials, project_id = google.auth.default()
     project = get_project(project_id)
     if not project:
         return f"project {project_id} not found", 404
 
-    expiry_date = project.create_time.timestamp() + MAX_PROJECT_AGE * 7
+    expiry_date = project.create_time.timestamp() + project_lifetime * 86400
 
     if expiry_date > int(datetime.now().timestamp()):
         return f'project {project_id} still within expiry range ({datetime.fromtimestamp(expiry_date):%F})'
