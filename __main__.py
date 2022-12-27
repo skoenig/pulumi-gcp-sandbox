@@ -1,5 +1,5 @@
 import pulumi
-from pulumi_gcp import projects, storage, cloudfunctions, serviceaccount
+from pulumi_gcp import projects, storage, cloudfunctions, serviceaccount, cloudscheduler
 
 # Get stack config
 config = pulumi.Config('gcp')
@@ -12,6 +12,7 @@ apis = {
     'cloudfunctions.googleapis.com': None,
     'cloudbuild.googleapis.com': None,
     'cloudresourcemanager.googleapis.com': None,
+    'cloudscheduler.googleapis.com': None,
 }
 
 
@@ -78,5 +79,24 @@ for role in ['roles/resourcemanager.projectDeleter', 'roles/viewer']:
         role=role,
         member=f'serviceAccount:resourcemanager@{project}.iam.gserviceaccount.com',
     )
+
+job = cloudscheduler.Job(
+    'python-scheduler',
+    description='Resourcemanager Function Scheduler',
+    schedule='01 * * * *',
+    time_zone='Europe/London',
+    http_target=cloudscheduler.JobHttpTargetArgs(
+        http_method="GET",
+        uri=py_function.https_trigger_url,
+        oidc_token=cloudscheduler.JobHttpTargetOidcTokenArgs(
+            service_account_email=service_account.email,
+        ),
+    ),
+    opts=pulumi.ResourceOptions(
+        depends_on=[
+            apis['cloudscheduler.googleapis.com'],
+        ],
+    ),
+)
 
 pulumi.export('cloud_function_trigger_url', py_function.https_trigger_url)
