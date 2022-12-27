@@ -46,6 +46,7 @@ py_function = cloudfunctions.Function(
     source_archive_object=py_bucket_object.name,
     entry_point='entry_point',
     trigger_http=True,
+    https_trigger_security_level='SECURE_ALWAYS',
     available_memory_mb=128,
     environment_variables={'PROJECT_LIFETIME': 7},
     service_account_email=f'resourcemanager@{project}.iam.gserviceaccount.com',
@@ -64,7 +65,7 @@ invoker = cloudfunctions.FunctionIamMember(
     region=py_function.region,
     cloud_function=py_function.name,
     role='roles/cloudfunctions.invoker',
-    member='allUsers',
+    member=f'serviceAccount:resourcemanager@{project}.iam.gserviceaccount.com',
 )
 
 service_account = serviceaccount.Account(
