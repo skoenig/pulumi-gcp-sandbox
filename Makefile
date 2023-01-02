@@ -30,6 +30,10 @@ endif
 install: .passphrase
 	$(DOCKER_CMD) -c "pulumi up"
 
+.PHONY: shell
+shell: .passphrase
+	$(DOCKER_CMD)
+
 .PHONY: clean
 clean:
 	$(eval PROJECT := $(shell $(DOCKER_CMD) -c "pulumi config get gcp:project 2>/dev/null"))
